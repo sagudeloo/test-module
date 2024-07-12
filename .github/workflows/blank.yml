@@ -25,6 +25,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: azure-test-module
-          path: azure-test-module # or path/to/artifact
+          path: azure-test-module/ # or path/to/artifact
 
           
