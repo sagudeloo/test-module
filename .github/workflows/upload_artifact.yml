@@ -27,7 +27,7 @@ jobs:
 
     strategy:
       matrix:
-        modules: [azure-test-module, azure-test-second-module]
+        modules: ${{vars.MODULES}}
 
     steps:
       - uses: actions/checkout@v4
