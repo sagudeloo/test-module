@@ -24,13 +24,18 @@ jobs:
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
+
+    strategy:
+      matrix:
+        modules: [azure-test-module, azure-test-second-module]
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: vimtor/action-zip@v1.2
         with:
-          files: azure-test-module/
-          dest: azure-test-module.zip
+          files: ${{matrix.modules}}/
+          dest: ${{matrix.modules}}.zip
 
       - name: Create Release
         id: create_release
@@ -38,8 +43,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: azure-test-module-1.0.0
-          release_name: Release azure-test-module
+          tag_name: ${{matrix.modules}}-v1.0.0
+          release_name: Release ${{matrix.modules}}
           body: |
             Test module
           draft: false
@@ -52,8 +57,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./azure-test-module.zip
-          asset_name: azure-test-module.zip
+          asset_path: ./${{matrix.modules}}.zip
+          asset_name: ${{matrix.modules}}.zip
           asset_content_type: application/zip
 
           
