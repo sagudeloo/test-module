@@ -33,6 +33,8 @@ jobs:
         id: changed-files
         with:
           dir_names: true
+          files: |
+            **/changelog.xml
           files_ignore: |
             .github/**
             .gitignore
