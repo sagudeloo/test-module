@@ -2,7 +2,8 @@
 
 name: CI
 
-permissions: write-all
+permissions: 
+  contents: write
 
 # Controls when the workflow will run
 on:
