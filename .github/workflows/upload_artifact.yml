@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Build Modules
 
 permissions: 
   contents: write
@@ -65,7 +65,7 @@ jobs:
 
     strategy:
       matrix:
-        modules: ${{ needs.diff.outputs.MODULES }}
+        modules: ${{ fromJSON(needs.diff.outputs.MODULES) }}
 
     steps:
       - uses: actions/checkout@v4
