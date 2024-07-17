@@ -93,15 +93,17 @@ jobs:
           files: ${{ matrix.modules }}/
           dest: ${{ steps.read_changelog.outputs['name'] }}.zip
 
-      - name: Set up Git
-        run: |
-          git config user.name "Build Modules Automation"
-          git config user.email "ghactions@test.com"
-
-      - name: Tag release commit
-        run: |
-          git tag "${{ steps.read_changelog.outputs['name'] }}-${{ steps.read_changelog.outputs['version'] }}" -m ${{ steps.read_description.outputs }}
-          git push --follow-tags
+      # - uses: actions/checkout@v4
+      #   if: github.event_name == 'pull_request'
+      #   with:
+      #     ref: ${{ github.base_ref }}
+      
+      # - if: github.event_name == 'pull_request'
+      #   run: |
+      #     git config user.name "Build Modules Automation"
+      #     git config user.email "ghactions@test.com"
+      #     git tag -a "${{ steps.read_changelog.outputs['name'] }}-${{ steps.read_changelog.outputs['version'] }}" -m ${{ steps.read_description.outputs }}
+      #     git push --follow-tags origin HEAD:$GITHUB_HEAD_REF
 
       - name: Create Release
         id: create_release
@@ -113,7 +115,7 @@ jobs:
           release_name: Release ${{ steps.read_changelog.outputs['name'] }} ${{ steps.read_changelog.outputs['version'] }}
           body: |
             ${{ steps.read_description.outputs }}
-          draft: false
+          draft: ${{ github.event_name == 'pull_request' }}
           prerelease: false
 
       - name: Upload Release Asset
