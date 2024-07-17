@@ -30,6 +30,32 @@ jobs:
         run: |
           echo "MODULES=['azure-test-module', 'azure-test-second-module']" >> $GITHUB_OUTPUT
 
+      - uses: tj-actions/changed-files@v44
+        id: changed-files
+        with:
+          dir_names: true
+          matrix: true
+          files: |
+            **/changelog.yml
+            **/changelog.yaml
+          files_ignore: |
+            .github/**
+            .gitignore
+            **.md
+
+      - name: List all changed files
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_and_modified_files }}
+        run: |
+          echo "Directories"
+          for file in ${ALL_CHANGED_FILES}; do
+            echo "$file was changed"
+          done
+          echo "Modules"
+          for file in ${ALL_CHANGED_FILES}; do
+            echo "$(basename $file) module"
+          done
+          echo "Process finished"
 
   # This workflow contains a single job called "build"
   build:
