@@ -76,6 +76,13 @@ jobs:
         with:
           config: ${{ matrix.modules }}/changelog.yaml
 
+      - name: Get version description
+        uses: pietrobolcato/action-read-yaml@1.1.0
+        id: read_description
+        with:
+          config: ${{ matrix.modules }}/changelog.yaml
+          key-path-pattern: ^changelog\.${{steps.read_changelog.outputs['version']}}\.
+
       - name: check
         run: 
           echo "${{ steps.read_changelog.outputs['name'] }}\n"
@@ -83,8 +90,18 @@ jobs:
 
       - uses: vimtor/action-zip@v1.2
         with:
-          files: ${{matrix.modules}}/
-          dest: ${{steps.read_changelog.outputs['name']}}.zip
+          files: ${{ matrix.modules }}/
+          dest: ${{ steps.read_changelog.outputs['name'] }}.zip
+
+      - name: Set up Git
+        run: |
+          git config user.name "Build Modules Automation"
+          git config user.email "ghactions@test.com"
+
+      - name: Tag release commit
+        run: |
+          git tag "${{ steps.read_changelog.outputs['name'] }}-${{ steps.read_changelog.outputs['version'] }}" -m ${{ steps.read_description.outputs }}
+          git push --follow-tags
 
       - name: Create Release
         id: create_release
@@ -92,10 +109,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{steps.read_changelog.outputs['name']}}-${{steps.read_changelog.outputs['version']}}
-          release_name: Release ${{steps.read_changelog.outputs['name']}} ${{steps.read_changelog.outputs['version']}}
+          tag_name: ${{ steps.read_changelog.outputs['name'] }}-${{ steps.read_changelog.outputs['version'] }}
+          release_name: Release ${{ steps.read_changelog.outputs['name'] }} ${{ steps.read_changelog.outputs['version'] }}
           body: |
-            steps.read_changelog.outputs['changelog.${{steps.read_changelog.outputs['version']}}']
+            ${{ steps.read_description.outputs }}
           draft: false
           prerelease: false
 
@@ -106,8 +123,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./${{steps.read_changelog.outputs['name']}}.zip
-          asset_name: ${{steps.read_changelog.outputs['name']}}.zip
+          asset_path: ./${{ steps.read_changelog.outputs['name'] }}.zip
+          asset_name: ${{ steps.read_changelog.outputs['name'] }}.zip
           asset_content_type: application/zip
 
           
