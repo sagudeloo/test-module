@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Build Modules
 
 permissions: 
   contents: write
@@ -10,8 +10,6 @@ on:
 
   # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
-  pull_request:
     branches: [ "main" ]
 
   # Allows you to run this workflow manually from the Actions tab
@@ -23,13 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     
     outputs:
-      MODULES: ${{steps.diff.outputs.MODULES}}
+      MODULES: ${{steps.changed-files.outputs.all_changed_and_modified_files}}
 
     steps:
-      - id: diff
-        run: |
-          echo "MODULES=['azure-test-module', 'azure-test-second-module']" >> $GITHUB_OUTPUT
-
+      
       - uses: tj-actions/changed-files@v44
         id: changed-files
         with:
@@ -73,10 +68,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Read changelog file
+        uses: pietrobolcato/action-read-yaml@1.1.0
+        id: read_changelog
+        with:
+          config: ${{ matrix.modules }}/changelog.yaml
+
+      - name: Get version description
+        uses: pietrobolcato/action-read-yaml@1.1.0
+        id: read_description
+        with:
+          config: ${{ matrix.modules }}/changelog.yaml
+          key-path-pattern: ^changelog\.${{steps.read_changelog.outputs['version']}}\.
+
+      - name: check
+        run: 
+          echo "${{ steps.read_changelog.outputs['name'] }}\n"
+          echo "${{ steps.read_changelog.outputs['version'] }}"
+
       - uses: vimtor/action-zip@v1.2
         with:
-          files: ${{matrix.modules}}/
-          dest: ${{matrix.modules}}.zip
+          files: ${{ matrix.modules }}/
+          dest: ${{ steps.read_changelog.outputs['name'] }}.zip
 
       - name: Create Release
         id: create_release
@@ -84,10 +97,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{matrix.modules}}-v1.0.0
-          release_name: Release ${{matrix.modules}}
+          tag_name: ${{ steps.read_changelog.outputs['name'] }}-${{ steps.read_changelog.outputs['version'] }}
+          release_name: Release ${{ steps.read_changelog.outputs['name'] }} ${{ steps.read_changelog.outputs['version'] }}
+          commitish: ${{ github.base_ref }}
           body: |
-            Test module
+            ${{ fromJSON( steps.read_description.outputs ) }}
           draft: false
           prerelease: false
 
@@ -98,8 +112,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./${{matrix.modules}}.zip
-          asset_name: ${{matrix.modules}}.zip
+          asset_path: ./${{ steps.read_changelog.outputs['name'] }}.zip
+          asset_name: ${{ steps.read_changelog.outputs['name'] }}.zip
           asset_content_type: application/zip
 
           

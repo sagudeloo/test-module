@@ -1,0 +1,6 @@
+---
+name: azure-second-module
+version: v0.1.1
+changelog:
+  v0.1.0: First Version
+  v0.1.1: Sencond Version
