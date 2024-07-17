@@ -70,10 +70,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: vimtor/action-zip@v1.2
+      - name: Read changelog file
+        uses: pietrobolcato/action-read-yaml@1.1.0
+        id: read_changelog
         with:
-          files: ${{matrix.modules}}/
-          dest: ${{matrix.modules}}.zip
+          config: ${{ matrix.modules }}/changelog.yaml
+
+      - name: check
+        run: 
+          echo "${{ steps.read_changelog.outputs['name'] }}"
+          echo "${{ steps.read_changelog.outputs['version'] }}"
+
+      # - uses: vimtor/action-zip@v1.2
+      #   with:
+      #     files: ${{matrix.modules}}/
+      #     dest: ${{matrix.modules}}.zip
 
       # - name: Create Release
       #   id: create_release
