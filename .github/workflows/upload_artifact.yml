@@ -11,8 +11,6 @@ on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -93,18 +91,6 @@ jobs:
           files: ${{ matrix.modules }}/
           dest: ${{ steps.read_changelog.outputs['name'] }}.zip
 
-      # - uses: actions/checkout@v4
-      #   if: github.event_name == 'pull_request'
-      #   with:
-      #     ref: ${{ github.base_ref }}
-      
-      # - if: github.event_name == 'pull_request'
-      #   run: |
-      #     git config user.name "Build Modules Automation"
-      #     git config user.email "ghactions@test.com"
-      #     git tag -a "${{ steps.read_changelog.outputs['name'] }}-${{ steps.read_changelog.outputs['version'] }}" -m ${{ steps.read_description.outputs }}
-      #     git push --follow-tags origin HEAD:$GITHUB_HEAD_REF
-
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -113,9 +99,10 @@ jobs:
         with:
           tag_name: ${{ steps.read_changelog.outputs['name'] }}-${{ steps.read_changelog.outputs['version'] }}
           release_name: Release ${{ steps.read_changelog.outputs['name'] }} ${{ steps.read_changelog.outputs['version'] }}
+          commitish: ${{ github.base_ref }}
           body: |
-            ${{ steps.read_description.outputs }}
-          draft: ${{ github.event_name == 'pull_request' }}
+            ${{ fromJSON( steps.read_description.outputs ) }}
+          draft: false
           prerelease: false
 
       - name: Upload Release Asset
