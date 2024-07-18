@@ -11,6 +11,8 @@ on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
     branches: [ "main" ]
+  pull_request: 
+    branches: [ "main" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -72,14 +74,14 @@ jobs:
         uses: pietrobolcato/action-read-yaml@1.1.0
         id: read_changelog
         with:
-          config: ${{ matrix.modules }}/changelog.yaml
+          config: ${{ matrix.modules }}/changelog.yml
 
       - name: Get version description
         uses: pietrobolcato/action-read-yaml@1.1.0
         id: read_description
         with:
-          config: ${{ matrix.modules }}/changelog.yaml
-          key-path-pattern: ^changelog\.${{steps.read_changelog.outputs['version']}}\.
+          config: ${{ matrix.modules }}/changelog.yml
+          key-path-pattern: ^${{steps.read_changelog.outputs['version']}}\.
 
       - name: check
         run: 
@@ -101,7 +103,7 @@ jobs:
           release_name: Release ${{ steps.read_changelog.outputs['name'] }} ${{ steps.read_changelog.outputs['version'] }}
           commitish: ${{ github.base_ref }}
           body: |
-            ${{ fromJSON( steps.read_description.outputs ) }}
+            ${{ steps.read_description.outputs[steps.read_changelog.outputs['version']] }}
           draft: false
           prerelease: false
 
