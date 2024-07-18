@@ -26,6 +26,8 @@ jobs:
       MODULES: ${{steps.changed-files.outputs.all_changed_and_modified_files}}
 
     steps:
+
+      - uses: actions/checkout@v4
       
       - uses: tj-actions/changed-files@v44
         id: changed-files
