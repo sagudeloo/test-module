@@ -103,7 +103,7 @@ jobs:
           release_name: Release ${{ steps.read_changelog.outputs['name'] }} ${{ steps.read_changelog.outputs['version'] }}
           commitish: ${{ github.base_ref }}
           body: |
-            ${{ steps.read_description.outputs[steps.read_changelog.outputs['version']] }}
+            ${{ steps.read_changelog.outputs[steps.read_changelog.outputs['version']] }}
           draft: false
           prerelease: false
 
